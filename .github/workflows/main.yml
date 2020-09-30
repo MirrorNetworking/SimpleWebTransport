@@ -30,8 +30,8 @@ jobs:
   Tests:
     name: Test
     runs-on: ubuntu-latest
-    # env:
-    #   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
     if: true
     steps:
   
@@ -54,10 +54,10 @@ jobs:
           source: Packages/manifest-coverage.json
           target: Packages/manifest.json
 
-      # - name: Activate license
-      #   uses: MirrorNG/unity-runner@2.0.0
-      #   with:
-      #     entrypoint: /activate.sh
+      - name: Activate license
+        uses: MirrorNG/unity-runner@2.0.0
+        with:
+          entrypoint: /activate.sh
           
       - name: Generate Solution
         uses: MirrorNG/unity-runner@2.0.0
