@@ -65,6 +65,11 @@ jobs:
           # Arguments to pass to unity
           args: -buildTarget StandaloneWindows64 -customBuildName MirrorNG -customBuildPath ./build/StandaloneWindows64 -projectPath . -executeMethod  UnityEditor.SyncVS.SyncSolution -quit
   
+      # Install node packages before running tests
+      - name: Install Node Packages
+        run: npm i
+        working-directory: Assets/SimpleWebTransport/tests/node~/
+
       # Configure test runner
       - name: Run editor Tests
         uses: MirrorNG/unity-runner@2.0.0
