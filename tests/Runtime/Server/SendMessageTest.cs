@@ -35,7 +35,7 @@ namespace Mirror.SimpleWeb.Tests.Server
 
             result.AssetTimeout(false);
             result.AssetOutput(
-                (string)$"length: {5} msg: 01 02 03 04 05"
+                "length: 5 msg: 01 02 03 04 05"
                 );
             result.AssetErrors();
         }
