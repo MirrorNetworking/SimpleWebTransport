@@ -86,7 +86,7 @@ namespace Mirror.SimpleWeb.Tests.Server
             result.AssetTimeout(false);
             result.AssetOutput(
                 "Connection opened",
-                $"Closed after 2000ms"
+                "Closed after 2000ms"
                 );
             result.AssetErrors();
 
