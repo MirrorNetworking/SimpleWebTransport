@@ -37,7 +37,7 @@ namespace Mirror.SimpleWeb.Tests
 
                 for (int i = 0; i < length; i++)
                 {
-                    Assert.That(logs[i], Is.EqualTo(expected[i]));
+                    Assert.That(logs[i].ToLower(), Is.EqualTo(expected[i].ToLower()));
                 }
             }
 
