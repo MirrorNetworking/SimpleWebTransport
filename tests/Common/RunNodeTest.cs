@@ -72,7 +72,7 @@ namespace Mirror.SimpleWeb.Tests
                 process.StartInfo = new ProcessStartInfo
                 {
                     FileName = "node",
-                    Arguments = fullPath,
+                    Arguments = $"--no-warnings {fullPath}",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false, // needs to be false for redirect
