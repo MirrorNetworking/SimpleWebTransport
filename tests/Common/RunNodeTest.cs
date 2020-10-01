@@ -1,8 +1,10 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,6 +19,42 @@ namespace Mirror.SimpleWeb.Tests
             public bool timedOut;
             public string[] output;
             public string[] error;
+
+            public void AssetOutput(params string[] messages)
+            {
+                AssertLogs(nameof(output), output, messages);
+            }
+
+            public void AssetErrors(params string[] messages)
+            {
+                AssertLogs(nameof(error), error, messages);
+            }
+
+            static void AssertLogs(string label, string[] logs, string[] expected)
+            {
+                int length = expected.Length;
+                Assert.That(logs, Has.Length.EqualTo(length), $"{label} should have {length} logs. Logs: \n{WriteLogs(logs)}");
+
+                for (int i = 0; i < length; i++)
+                {
+                    Assert.That(logs[i], Is.EqualTo(expected[i]));
+                }
+            }
+
+            static string WriteLogs(string[] lines)
+            {
+                IEnumerable<int> range = Enumerable.Range(0, lines.Length);
+                return string.Join("", Enumerable.Zip(range, lines, (i, line) => $"{i}: {line}\n"));
+            }
+
+            public void AssetTimeout(bool expected)
+            {
+                Assert.That(timedOut, Is.EqualTo(expected),
+                    expected
+                    ? "nodejs should have timed out"
+                    : "nodejs should close before timeout"
+                    );
+            }
         }
 
         public static Result Run(string scriptName, bool continueOnCapturedContext, int msTimeout = 5000)
