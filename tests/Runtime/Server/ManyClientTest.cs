@@ -14,52 +14,41 @@ namespace Mirror.SimpleWeb.Tests.Server
     {
         protected override bool StartServer => true;
 
-
         [UnityTest]
         [TestCase(1, ExpectedResult = null)]
         [TestCase(10, ExpectedResult = null)]
         [TestCase(100, ExpectedResult = null)]
         public IEnumerator ManyConnect(int count)
         {
-            List<Task<RunNode.Result>> clients = new List<Task<RunNode.Result>>();
-
             int connectIndex = 1;
             transport.OnServerConnected.AddListener((connId) =>
             {
-                Assert.That(connId == connectIndex, "Clients should be connected in order with the next index");
+                Assert.That(connId, Is.EqualTo(connectIndex), "Clients should be connected in order with the next index");
                 connectIndex++;
             });
 
-            for (int i = 0; i < count; i++)
-            {
-                // connect good client
-                Task<RunNode.Result> task = RunNode.RunAsync("ConnectAndClose.js");
-                clients.Add(task);
+            Task<RunNode.Result> task = RunNode.RunAsync("ConnectAndCloseMany.js", arg0: count.ToString(), msTimeout: 10000);
 
-                yield return null;
-            }
-
-            // 4 seconds should be enough time for clients to connect then close themselves
-            yield return new WaitForSeconds(4);
+            // 10 seconds should be enough time for clients to connect then close themselves
+            yield return new WaitForSeconds(10);
 
             Assert.That(onConnect, Has.Count.EqualTo(count), "All should be connectted");
             Assert.That(onDisconnect, Has.Count.EqualTo(count), "All should be disconnected called");
             Assert.That(onData, Has.Count.EqualTo(0), "Data should not be called");
 
+
+            Assert.That(task.IsCompleted, Is.True, "Take should have been completed");
+
+            RunNode.Result result = task.Result;
+            result.AssetTimeout(false);
+            result.AssetErrors();
+            List<string> expected = new List<string>();
             for (int i = 0; i < count; i++)
             {
-                Task<RunNode.Result> task = clients[0];
-                Assert.That(task.IsCompleted, Is.True, "Take should have been completed");
-
-                RunNode.Result result = task.Result;
-
-                result.AssetTimeout(false);
-                result.AssetOutput(
-                    "Connection opened",
-                    "Closed after 2000ms"
-                );
-                result.AssetErrors();
+                expected.Add($"{i}: Connection opened");
+                expected.Add($"{i}: Closed after 2000ms");
             }
+            result.AssetOutputUnordered(expected.ToArray());
         }
 
         [UnityTest]
@@ -68,8 +57,6 @@ namespace Mirror.SimpleWeb.Tests.Server
         [TestCase(100, ExpectedResult = null)]
         public IEnumerator ManyPings(int count)
         {
-            List<Task<RunNode.Result>> clients = new List<Task<RunNode.Result>>();
-
             int connectIndex = 1;
             transport.OnServerConnected.AddListener((connId) =>
             {
@@ -77,14 +64,7 @@ namespace Mirror.SimpleWeb.Tests.Server
                 connectIndex++;
             });
 
-            for (int i = 0; i < count; i++)
-            {
-                // connect good client
-                Task<RunNode.Result> task = RunNode.RunAsync("Ping.js", 30_000);
-                clients.Add(task);
-
-                yield return null;
-            }
+            Task<RunNode.Result> task = RunNode.RunAsync("Ping.js", arg0: count.ToString(), msTimeout: 30_000);
 
             // 4 seconds should be enough time for clients to connect then close themselves
             yield return new WaitForSeconds(4);
@@ -112,17 +92,13 @@ namespace Mirror.SimpleWeb.Tests.Server
             Assert.That(onDisconnect, Has.Count.EqualTo(count), "no clients should be disconnected");
 
             // check all tasks finished with no logs
-            for (int i = 0; i < count; i++)
-            {
-                Task<RunNode.Result> task = clients[0];
-                Assert.That(task.IsCompleted, Is.True, "Take should have been completed");
+            Assert.That(task.IsCompleted, Is.True, "Take should have been completed");
 
-                RunNode.Result result = task.Result;
+            RunNode.Result result = task.Result;
 
-                result.AssetTimeout(false);
-                result.AssetOutput();
-                result.AssetErrors();
-            }
+            result.AssetTimeout(false);
+            result.AssetOutput();
+            result.AssetErrors();
 
 
             List<ArraySegment<byte>>[] messageForClients = Enumerable.Repeat(0, count).Select(x => new List<ArraySegment<byte>>()).ToArray();
@@ -150,8 +126,6 @@ namespace Mirror.SimpleWeb.Tests.Server
         [TestCase(100, ExpectedResult = null)]
         public IEnumerator ManySend(int count)
         {
-            List<Task<RunNode.Result>> clients = new List<Task<RunNode.Result>>();
-
             int connectIndex = 1;
             transport.OnServerConnected.AddListener((connId) =>
             {
@@ -159,14 +133,7 @@ namespace Mirror.SimpleWeb.Tests.Server
                 connectIndex++;
             });
 
-            for (int i = 0; i < count; i++)
-            {
-                // connect good client
-                Task<RunNode.Result> task = RunNode.RunAsync("Ping.js", 30_000);
-                clients.Add(task);
-
-                yield return null;
-            }
+            Task<RunNode.Result> task = RunNode.RunAsync("Ping.js", arg0: count.ToString(), msTimeout: 30_000);
 
             // 4 seconds should be enough time for clients to connect then close themselves
             yield return new WaitForSeconds(4);
@@ -206,18 +173,13 @@ namespace Mirror.SimpleWeb.Tests.Server
             yield return new WaitForSeconds(1);
             Assert.That(onDisconnect, Has.Count.EqualTo(count), "no clients should be disconnected");
 
-            // check all tasks finished with no logs
-            for (int i = 0; i < count; i++)
-            {
-                Task<RunNode.Result> task = clients[0];
-                Assert.That(task.IsCompleted, Is.True, "Take should have been completed");
+            Assert.That(task.IsCompleted, Is.True, "Take should have been completed");
 
-                RunNode.Result result = task.Result;
+            RunNode.Result result = task.Result;
 
-                result.AssetTimeout(false);
-                result.AssetOutput();
-                result.AssetErrors();
-            }
+            result.AssetTimeout(false);
+            result.AssetOutput();
+            result.AssetErrors();
 
 
             List<ArraySegment<byte>>[] messageForClients = Enumerable.Repeat(0, count).Select(x => new List<ArraySegment<byte>>()).ToArray();
