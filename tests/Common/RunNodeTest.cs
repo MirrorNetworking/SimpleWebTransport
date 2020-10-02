@@ -55,6 +55,19 @@ namespace Mirror.SimpleWeb.Tests
                     : "nodejs should close before timeout"
                     );
             }
+
+            public void AssetOutputUnordered(string[] messages)
+            {
+                AssertLogsUnordered(nameof(output), output, messages);
+            }
+
+            static void AssertLogsUnordered(string label, string[] logs, string[] expected)
+            {
+                int length = expected.Length;
+                Assert.That(logs, Has.Length.EqualTo(length), $"{label} should have {length} logs. Logs: \n{WriteLogs(logs)}");
+
+                CollectionAssert.AreEquivalent(expected, logs);
+            }
         }
 
         public static Result Run(string scriptName, bool continueOnCapturedContext, int msTimeout = 5000)
