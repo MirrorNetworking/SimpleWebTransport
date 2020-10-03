@@ -81,10 +81,7 @@ namespace Mirror.SimpleWeb
         {
             client?.Disconnect();
             server?.Stop();
-            if (isWebGL)
-            {
-                SimpleWebClient.CloseExisting();
-            }
+            SimpleWebClient.CloseExisting();
         }
 
         private void LateUpdate()
