@@ -153,7 +153,7 @@ namespace Mirror.SimpleWeb
                 Debug.LogError("Not Connected");
             }
 
-            client.Disconnect();
+            client?.Disconnect();
             client = null;
         }
 
