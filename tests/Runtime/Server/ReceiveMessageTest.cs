@@ -166,13 +166,14 @@ namespace Mirror.SimpleWeb.Tests.Server
         [UnityTest]
         public IEnumerator ReceiveTooLargeArrays()
         {
+            Debug.Log("**ReceiveTooLargeArrays Start**");
             // dont worry about result, run will timeout by itself
             _ = RunNode.RunAsync("SendTooLargeMessages.js");
 
             yield return WaitForConnect;
 
             // wait for message
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(2f);
 
             Assert.That(onData, Has.Count.EqualTo(0), $"Should have 0 message");
 
