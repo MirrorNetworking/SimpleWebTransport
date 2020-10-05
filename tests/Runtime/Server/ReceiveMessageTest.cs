@@ -174,7 +174,6 @@ namespace Mirror.SimpleWeb.Tests.Server
         [UnityTest]
         public IEnumerator ReceiveTooLargeArrays()
         {
-            Debug.Log("**ReceiveTooLargeArrays Start**");
             // dont worry about result, run will timeout by itself
             _ = RunNode.RunAsync("SendTooLargeMessages.js");
 
