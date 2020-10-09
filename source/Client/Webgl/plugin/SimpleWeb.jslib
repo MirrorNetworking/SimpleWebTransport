@@ -1,9 +1,9 @@
 // this will create a global object
-$SimpleWeb = {
+const SimpleWeb = {
     webSockets: [],
     next: 1,
     GetWebSocket: function (index) {
-        return SimpleWeb.webSocket[index]
+        return SimpleWeb.webSockets[index]
     },
     AddNextSocket: function (webSocket) {
         var index = SimpleWeb.next;
@@ -69,7 +69,6 @@ function Connect(addressPtr, openCallbackPtr, closeCallBackPtr, messageCallbackP
         Runtime.dynCall('vi', errorCallbackPtr, [index]);
     });
 
-
     return index;
 }
 
@@ -96,6 +95,7 @@ function Send(index, arrayPtr, offset, length) {
 
 
 const SimpleWebLib = {
+    $SimpleWeb: SimpleWeb,
     IsConnected,
     Connect,
     Disconnect,
