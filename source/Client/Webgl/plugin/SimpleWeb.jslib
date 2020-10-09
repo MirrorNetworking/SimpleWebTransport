@@ -1,22 +1,20 @@
-/** initializes SimpleWeb object, safe to call multiple times */
-function Init() {
-    if (SimpleWeb === undefined) {
-        // this will create a global object
-        SimpleWeb = {};
-        SimpleWeb.webSockets = [];
-        SimpleWeb.next = 1;
-        SimpleWeb.GetWebSocket = index => SimpleWeb.webSocket[index];
-        SimpleWeb.AddNextSocket = webSocket => {
-            var index = SimpleWeb.next;
-            SimpleWeb.next++;
-            SimpleWeb.webSockets[index] = webSocket;
-            return index;
-        }
-        SimpleWeb.RemoveSocket = index => {
-            SimpleWeb.webSockets[index] = undefined;
-        }
-    }
-}
+// this will create a global object
+$SimpleWeb = {
+    webSockets: [],
+    next: 1,
+    GetWebSocket: function (index) {
+        return SimpleWeb.webSocket[index]
+    },
+    AddNextSocket: function (webSocket) {
+        var index = SimpleWeb.next;
+        SimpleWeb.next++;
+        SimpleWeb.webSockets[index] = webSocket;
+        return index;
+    },
+    RemoveSocket: function (index) {
+        SimpleWeb.webSockets[index] = undefined;
+    },
+};
 
 function IsConnected(index) {
     Init();
@@ -101,10 +99,12 @@ function Send(index, arrayPtr, offset, length) {
     return false;
 }
 
-mergeInto(LibraryManager.library, {
-    Init,
+
+const SimpleWebLib = {
     IsConnected,
     Connect,
     Disconnect,
     Send
-});
+};
+autoAddDeps(SimpleWebLib, '$SimpleWeb');
+mergeInto(LibraryManager.library, SimpleWebLib);
