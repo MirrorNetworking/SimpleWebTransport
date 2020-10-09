@@ -102,6 +102,7 @@ function Send(index, arrayPtr, offset, length) {
 }
 
 mergeInto(LibraryManager.library, {
+    Init,
     IsConnected,
     Connect,
     Disconnect,
