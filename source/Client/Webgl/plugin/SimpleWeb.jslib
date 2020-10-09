@@ -1,6 +1,26 @@
-let webSocket = undefined;
+/** initializes SimpleWeb object, safe to call multiple times */
+function Init() {
+    if (SimpleWeb === undefined) {
+        // this will create a global object
+        SimpleWeb = {};
+        SimpleWeb.webSockets = [];
+        SimpleWeb.next = 1;
+        SimpleWeb.GetWebSocket = index => SimpleWeb.webSocket[index];
+        SimpleWeb.AddNextSocket = webSocket => {
+            var index = SimpleWeb.next;
+            SimpleWeb.next++;
+            SimpleWeb.webSockets[index] = webSocket;
+            return index;
+        }
+        SimpleWeb.RemoveSocket = index => {
+            SimpleWeb.webSockets[index] = undefined;
+        }
+    }
+}
 
-function IsConnected() {
+function IsConnected(index) {
+    Init();
+    var webSocket = SimpleWeb.GetWebSocket(index);
     if (webSocket) {
         return webSocket.readyState === webSocket.OPEN;
     }
@@ -10,20 +30,23 @@ function IsConnected() {
 }
 
 function Connect(addressPtr, openCallbackPtr, closeCallBackPtr, messageCallbackPtr, errorCallbackPtr) {
+    Init();
+
     const address = Pointer_stringify(addressPtr);
     console.log("Connecting to " + address);
     // Create webSocket connection.
     webSocket = new WebSocket(address);
     webSocket.binaryType = 'arraybuffer';
+    const index = SimpleWeb.AddNextSocket(webSocket);
 
     // Connection opened
     webSocket.addEventListener('open', function (event) {
         console.log("Connected to " + address);
-        Runtime.dynCall('v', openCallbackPtr, 0);
+        Runtime.dynCall('vi', openCallbackPtr, [index]);
     });
     webSocket.addEventListener('close', function (event) {
         console.log("Disconnected from " + address);
-        Runtime.dynCall('v', closeCallBackPtr, 0);
+        Runtime.dynCall('vi', closeCallBackPtr, [index]);
     });
 
     // Listen for messages
@@ -37,7 +60,7 @@ function Connect(addressPtr, openCallbackPtr, closeCallBackPtr, messageCallbackP
             var dataBuffer = new Uint8Array(HEAPU8.buffer, bufferPtr, arrayLength);
             dataBuffer.set(array);
 
-            Runtime.dynCall('vii', messageCallbackPtr, [bufferPtr, arrayLength]);
+            Runtime.dynCall('viii', messageCallbackPtr, [index, bufferPtr, arrayLength]);
             _free(bufferPtr);
         }
         else {
@@ -48,25 +71,34 @@ function Connect(addressPtr, openCallbackPtr, closeCallBackPtr, messageCallbackP
     webSocket.addEventListener('error', function (event) {
         console.error('Socket Error', event);
 
-        Runtime.dynCall('v', errorCallbackPtr, 0);
+        Runtime.dynCall('vi', errorCallbackPtr, [index]);
     });
+
+
+    return index;
 }
 
-function Disconnect() {
+function Disconnect(index) {
+    Init();
+
+    var webSocket = SimpleWeb.GetWebSocket(index);
     if (webSocket) {
         webSocket.close(1000, "Disconnect Called by Mirror");
     }
 
-    webSocket = undefined;
+    SimpleWeb.RemoveSocket(index);
 }
 
-function Send(arrayPtr, offset, length) {
+function Send(index, arrayPtr, offset, length) {
+    var webSocket = SimpleWeb.GetWebSocket(index);
     if (webSocket) {
         const start = arrayPtr + offset;
         const end = start + length;
         const data = HEAPU8.buffer.slice(start, end);
         webSocket.send(data);
+        return true;
     }
+    return false;
 }
 
 mergeInto(LibraryManager.library, {
