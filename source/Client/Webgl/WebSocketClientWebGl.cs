@@ -26,6 +26,7 @@ namespace Mirror.SimpleWeb
         public override void Connect(string address)
         {
             index = SimpleWebJSLib.Connect(address, OpenCallback, CloseCallBack, MessageCallback, ErrorCallback);
+            instances.Add(index, this);
             state = ClientState.Connecting;
         }
 
@@ -55,8 +56,11 @@ namespace Mirror.SimpleWeb
 
         void onClose()
         {
+            // this code should be last in this class
+
             receiveQueue.Enqueue(new Message(EventType.Disconnected));
             state = ClientState.NotConnected;
+            instances.Remove(index);
         }
 
         void onMessage(IntPtr bufferPtr, int count)
