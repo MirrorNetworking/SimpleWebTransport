@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -27,7 +27,7 @@ namespace Mirror.SimpleWeb.Tests.Client
             yield return new WaitForSeconds(0.5f);
 
 
-            Assert.That(server_onConnect, Has.Count.EqualTo(count), $"{count} should have connected");
+            Assert.That(server_onConnect, Has.Count.EqualTo(count), $"Connect should have been calle {count} times");
 
             for (int i = 0; i < count; i++)
             {
@@ -38,7 +38,7 @@ namespace Mirror.SimpleWeb.Tests.Client
             // wait for disconnect
             yield return new WaitForSeconds(1);
 
-            Assert.That(server_onDisconnect, Has.Count.EqualTo(1), "server Disconnect should be called once");
+            Assert.That(server_onDisconnect, Has.Count.EqualTo(count), $"disconnect should have been calle {count} times");
         }
     }
 }
