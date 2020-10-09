@@ -17,7 +17,6 @@ $SimpleWeb = {
 };
 
 function IsConnected(index) {
-    Init();
     var webSocket = SimpleWeb.GetWebSocket(index);
     if (webSocket) {
         return webSocket.readyState === webSocket.OPEN;
@@ -28,8 +27,6 @@ function IsConnected(index) {
 }
 
 function Connect(addressPtr, openCallbackPtr, closeCallBackPtr, messageCallbackPtr, errorCallbackPtr) {
-    Init();
-
     const address = Pointer_stringify(addressPtr);
     console.log("Connecting to " + address);
     // Create webSocket connection.
@@ -77,8 +74,6 @@ function Connect(addressPtr, openCallbackPtr, closeCallBackPtr, messageCallbackP
 }
 
 function Disconnect(index) {
-    Init();
-
     var webSocket = SimpleWeb.GetWebSocket(index);
     if (webSocket) {
         webSocket.close(1000, "Disconnect Called by Mirror");
