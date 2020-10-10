@@ -6,24 +6,24 @@ using UnityEngine.TestTools;
 namespace Mirror.SimpleWeb.Tests.Server
 {
     [Category("SimpleWebTransport")]
-    public class StartAndStopTest : SimpleWebServerTestBase
+    public class StartAndStopTest : SimpleWebTestBase
     {
         protected override bool StartServer => false;
 
         [UnityTest]
         public IEnumerator ServerCanStartAndStopWithoutErrors()
         {
-            SimpleWebTransport transport = CreateTransport();
+            SimpleWebTransport transport = CreateTransport<SimpleWebTransport>();
 
-            transport.ServerStart();
-            Assert.That(transport.ServerActive(), Is.True);
+            server.ServerStart();
+            Assert.That(server.ServerActive(), Is.True);
             yield return new WaitForSeconds(0.2f);
-            Assert.That(transport.ServerActive(), Is.True);
+            Assert.That(server.ServerActive(), Is.True);
 
-            transport.ServerStop();
-            Assert.That(transport.ServerActive(), Is.False);
+            server.ServerStop();
+            Assert.That(server.ServerActive(), Is.False);
             yield return new WaitForSeconds(0.2f);
-            Assert.That(transport.ServerActive(), Is.False);
+            Assert.That(server.ServerActive(), Is.False);
         }
 
 
@@ -32,27 +32,27 @@ namespace Mirror.SimpleWeb.Tests.Server
         {
             // use {} block for local variable scope
             {
-                SimpleWebTransport transport = CreateTransport();
+                SimpleWebTransport transport = CreateTransport<SimpleWebTransport>();
 
-                transport.ServerStart();
-                Assert.That(transport.ServerActive(), Is.True);
+                server.ServerStart();
+                Assert.That(server.ServerActive(), Is.True);
                 yield return new WaitForSeconds(0.2f);
-                Assert.That(transport.ServerActive(), Is.True);
+                Assert.That(server.ServerActive(), Is.True);
 
-                transport.ServerStop();
-                Assert.That(transport.ServerActive(), Is.False);
+                server.ServerStop();
+                Assert.That(server.ServerActive(), Is.False);
             }
 
             {
-                SimpleWebTransport transport = CreateTransport();
+                SimpleWebTransport transport = CreateTransport<SimpleWebTransport>();
 
-                transport.ServerStart();
-                Assert.That(transport.ServerActive(), Is.True);
+                server.ServerStart();
+                Assert.That(server.ServerActive(), Is.True);
                 yield return new WaitForSeconds(0.2f);
-                Assert.That(transport.ServerActive(), Is.True);
+                Assert.That(server.ServerActive(), Is.True);
 
-                transport.ServerStop();
-                Assert.That(transport.ServerActive(), Is.False);
+                server.ServerStop();
+                Assert.That(server.ServerActive(), Is.False);
             }
         }
     }
