@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
-using UnityEngine;
 
 namespace Mirror.SimpleWeb
 {
@@ -77,12 +77,13 @@ namespace Mirror.SimpleWeb
             return new ArraySegment<byte>(array, 0, Length);
         }
 
-
-
-        [System.Diagnostics.Conditional("UNITY_ASSERTIONS")]
+        [Conditional("UNITY_ASSERTIONS")]
         internal void Validate(int arraySize)
         {
-            Debug.Assert(array.Length == arraySize, "Buffer that was returned had an array of the wrong size");
+            if (array.Length != arraySize)
+            {
+                Log.Error("Buffer that was returned had an array of the wrong size");
+            }
         }
     }
 
@@ -90,6 +91,11 @@ namespace Mirror.SimpleWeb
     {
         public readonly int arraySize;
         readonly ConcurrentQueue<ArrayBuffer> buffers;
+
+        /// <summary>
+        /// keeps track of how many arrays are taken vs returned
+        /// </summary>
+        internal int _current = 0;
 
         public BufferBucket(int arraySize)
         {
@@ -99,13 +105,26 @@ namespace Mirror.SimpleWeb
 
         public ArrayBuffer Take()
         {
+            IncrementCreated();
             return buffers.TryDequeue(out ArrayBuffer buffer) ? buffer : new ArrayBuffer(this, arraySize);
         }
 
         public void Return(ArrayBuffer buffer)
         {
+            DecrementCreated();
             buffer.Validate(arraySize);
             buffers.Enqueue(buffer);
+        }
+
+        [Conditional("DEBUG")]
+        private void IncrementCreated()
+        {
+            Interlocked.Increment(ref _current);
+        }
+        [Conditional("DEBUG")]
+        private void DecrementCreated()
+        {
+            Interlocked.Decrement(ref _current);
         }
     }
 
