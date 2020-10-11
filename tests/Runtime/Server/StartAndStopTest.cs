@@ -15,15 +15,15 @@ namespace Mirror.SimpleWeb.Tests.Server
         {
             SimpleWebTransport transport = CreateTransport<SimpleWebTransport>();
 
-            server.ServerStart();
-            Assert.That(server.ServerActive(), Is.True);
+            transport.ServerStart();
+            Assert.That(transport.ServerActive(), Is.True);
             yield return new WaitForSeconds(0.2f);
-            Assert.That(server.ServerActive(), Is.True);
+            Assert.That(transport.ServerActive(), Is.True);
 
-            server.ServerStop();
-            Assert.That(server.ServerActive(), Is.False);
+            transport.ServerStop();
+            Assert.That(transport.ServerActive(), Is.False);
             yield return new WaitForSeconds(0.2f);
-            Assert.That(server.ServerActive(), Is.False);
+            Assert.That(transport.ServerActive(), Is.False);
         }
 
 
@@ -34,25 +34,25 @@ namespace Mirror.SimpleWeb.Tests.Server
             {
                 SimpleWebTransport transport = CreateTransport<SimpleWebTransport>();
 
-                server.ServerStart();
-                Assert.That(server.ServerActive(), Is.True);
+                transport.ServerStart();
+                Assert.That(transport.ServerActive(), Is.True);
                 yield return new WaitForSeconds(0.2f);
-                Assert.That(server.ServerActive(), Is.True);
+                Assert.That(transport.ServerActive(), Is.True);
 
-                server.ServerStop();
-                Assert.That(server.ServerActive(), Is.False);
+                transport.ServerStop();
+                Assert.That(transport.ServerActive(), Is.False);
             }
 
             {
                 SimpleWebTransport transport = CreateTransport<SimpleWebTransport>();
 
-                server.ServerStart();
-                Assert.That(server.ServerActive(), Is.True);
+                transport.ServerStart();
+                Assert.That(transport.ServerActive(), Is.True);
                 yield return new WaitForSeconds(0.2f);
-                Assert.That(server.ServerActive(), Is.True);
+                Assert.That(transport.ServerActive(), Is.True);
 
-                server.ServerStop();
-                Assert.That(server.ServerActive(), Is.False);
+                transport.ServerStop();
+                Assert.That(transport.ServerActive(), Is.False);
             }
         }
     }
