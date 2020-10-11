@@ -15,7 +15,7 @@ namespace Mirror.SimpleWeb.Tests
     public abstract class SimpleWebTestBase
     {
         protected const int timeout = 4000;
-        const Log.Levels LogLevel = Log.Levels.verbose;
+        const Log.Levels LogLevel = Log.Levels.info;
 
         protected abstract bool StartServer { get; }
 
