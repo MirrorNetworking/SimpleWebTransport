@@ -6,6 +6,12 @@ namespace Mirror.SimpleWeb.Tests
 {
     public static class SimpleWebTransportExtension
     {
+        /// <summary>
+        /// Create copy of array, need to do this because buffers are re-used
+        /// </summary>
+        /// <param name="_"></param>
+        /// <param name="segment"></param>
+        /// <returns></returns>
         public static byte[] CreateCopy(this SimpleWebTransport _, ArraySegment<byte> segment)
         {
             byte[] copy = new byte[segment.Count];
