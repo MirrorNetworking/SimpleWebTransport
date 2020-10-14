@@ -3,11 +3,16 @@ using System.IO;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Threading;
+using UnityEngine.Profiling;
 
 namespace Mirror.SimpleWeb
 {
     internal static class SendLoop
     {
+        [ThreadStatic] static CustomSampler loopSample;
+        [ThreadStatic] static CustomSampler sendMessageSample;
+        [ThreadStatic] static CustomSampler streamWriteSample;
+        
         public struct Config
         {
             public readonly Connection conn;
@@ -33,6 +38,10 @@ namespace Mirror.SimpleWeb
         public static void Loop(Config config)
         {
             (Connection conn, int bufferSize, bool setMask) = config;
+            loopSample = CustomSampler.Create("Loop");
+            sendMessageSample = CustomSampler.Create("SendMessage");
+            streamWriteSample = CustomSampler.Create("StreamWrite");
+            Profiler.BeginThreadProfiling("SimpleWeb", $"SendLoop {conn.connId}");
 
             // create write buffer for this thread
             byte[] writeBuffer = new byte[bufferSize];
@@ -48,18 +57,22 @@ namespace Mirror.SimpleWeb
 
                 while (client.Connected)
                 {
+                    loopSample.Begin();
                     // wait for message
                     conn.sendPending.Wait();
                     conn.sendPending.Reset();
 
                     while (conn.sendQueue.TryDequeue(out ArrayBuffer msg))
                     {
+                        sendMessageSample.Begin();
                         // check if connected before sending message
                         if (!client.Connected) { Log.Info($"SendLoop {conn} not connected"); return; }
 
                         SendMessage(stream, writeBuffer, msg, setMask, maskHelper);
                         msg.Release();
+                        sendMessageSample.End();
                     }
+                    loopSample.End();
                 }
 
                 Log.Info($"{conn} Not Connected");
@@ -74,6 +87,7 @@ namespace Mirror.SimpleWeb
             {
                 conn.Dispose();
                 maskHelper?.Dispose();
+                Profiler.EndThreadProfiling();
             }
         }
 
@@ -99,7 +113,9 @@ namespace Mirror.SimpleWeb
                 MessageProcessor.ToggleMask(buffer, messageOffset, msgLength, buffer, messageOffset - Constants.MaskSize);
             }
 
+            streamWriteSample.Begin();
             stream.Write(buffer, 0, sendLength);
+            streamWriteSample.End();
         }
 
         static int WriteHeader(byte[] buffer, int msgLength, bool setMask)

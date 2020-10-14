@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using UnityEngine.Profiling;
 
 namespace Mirror.SimpleWeb
 {
@@ -36,9 +37,16 @@ namespace Mirror.SimpleWeb
             }
         }
 
+        [ThreadStatic] static CustomSampler loopSample;
+        [ThreadStatic] static CustomSampler readAndProcessSample;
+
         public static void Loop(Config config)
         {
             (Connection conn, int maxMessageSize, bool expectMask, ConcurrentQueue<Message> queue, BufferPool _) = config;
+
+            loopSample = CustomSampler.Create("Loop");
+            readAndProcessSample = CustomSampler.Create("ReadAndProcess");
+            Profiler.BeginThreadProfiling("SimpleWeb", $"ReceiveLoop {conn.connId}");
 
             byte[] readBuffer = new byte[Constants.HeaderSize + (expectMask ? Constants.MaskSize : 0) + maxMessageSize];
             try
@@ -49,7 +57,9 @@ namespace Mirror.SimpleWeb
 
                     while (client.Connected)
                     {
+                        loopSample.Begin();
                         ReadOneMessage(config, readBuffer);
+                        loopSample.End();
                     }
 
                     Log.Info($"{conn} Not Connected");
@@ -95,6 +105,7 @@ namespace Mirror.SimpleWeb
             finally
             {
                 conn.Dispose();
+                Profiler.EndThreadProfiling();
             }
         }
 
@@ -107,6 +118,7 @@ namespace Mirror.SimpleWeb
             // read 2
             offset = ReadHelper.Read(stream, buffer, offset, Constants.HeaderMinSize);
             // log after first blocking call
+            readAndProcessSample.Begin();
             Log.Verbose($"Message From {conn}");
 
             if (MessageProcessor.NeedToReadShortLength(buffer))
@@ -162,6 +174,7 @@ namespace Mirror.SimpleWeb
             Log.DumpBuffer($"Message", arrayBuffer);
 
             queue.Enqueue(new Message(conn.connId, arrayBuffer));
+            readAndProcessSample.End();
         }
 
         static void HandleCloseMessage(Config config, byte[] buffer, int msgOffset, int payloadLength)
