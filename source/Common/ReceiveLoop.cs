@@ -4,6 +4,8 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Mirror.SimpleWeb.Profiling;
+using UnityEngine.Profiling;
 
 namespace Mirror.SimpleWeb
 {
@@ -39,6 +41,9 @@ namespace Mirror.SimpleWeb
         public static void Loop(Config config)
         {
             (Connection conn, int maxMessageSize, bool expectMask, ConcurrentQueue<Message> queue, BufferPool _) = config;
+
+            Profiler.BeginThreadProfiling("SimpleWeb", $"ReceiveLoop {conn.connId}");
+            Measure.CreateThreadInstance($"ReceiveLoop {conn.connId}");
 
             byte[] readBuffer = new byte[Constants.HeaderSize + (expectMask ? Constants.MaskSize : 0) + maxMessageSize];
             try
@@ -94,6 +99,9 @@ namespace Mirror.SimpleWeb
             }
             finally
             {
+                Profiler.EndThreadProfiling();
+                Measure.DestroyThreadInstance($"ReceiveLoop {conn.connId}");
+
                 conn.Dispose();
             }
         }
@@ -108,6 +116,8 @@ namespace Mirror.SimpleWeb
             offset = ReadHelper.Read(stream, buffer, offset, Constants.HeaderMinSize);
             // log after first blocking call
             Log.Verbose($"Message From {conn}");
+            // start measure after first read (because first read includes waiting for message to be sent)
+            Measure.Start();
 
             if (MessageProcessor.NeedToReadShortLength(buffer))
             {
@@ -129,6 +139,7 @@ namespace Mirror.SimpleWeb
 
             int msgOffset = offset;
             offset = ReadHelper.Read(stream, buffer, offset, payloadLength);
+            Measure.End(offset);
 
             switch (opcode)
             {
