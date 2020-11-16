@@ -44,7 +44,7 @@ namespace Mirror.SimpleWeb
         [Tooltip("Waits for 1ms before grouping and sending messages. " +
             "This gives time for mirror to finish adding message to queue so that less groups need to be made. " +
             "If WaitBeforeSend is true then BatchSend Will also be set to true")]
-        public bool waitBeforeSend = true;
+        public bool waitBeforeSend = false;
 
 
         [Header("Ssl Settings")]
