@@ -12,7 +12,6 @@ namespace Mirror.SimpleWeb
     {
         public static volatile bool batchSend = false;
         public static volatile bool sleepBeforeSend = false;
-        public static volatile bool flushAfterSend = false;
     }
     internal static class SendLoop
     {
@@ -110,13 +109,6 @@ namespace Mirror.SimpleWeb
                             Measure.End(length);
                             msg.Release();
                         }
-                    }
-
-
-                    if (SendLoopConfig.flushAfterSend)
-                    {
-                        // flush to tell stream to send right away
-                        stream.Flush();
                     }
                 }
 
