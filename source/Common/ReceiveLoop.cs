@@ -113,7 +113,6 @@ namespace Mirror.SimpleWeb
             offset = ReadHelper.Read(stream, buffer, offset, Constants.HeaderMinSize);
             // log after first blocking call
             Log.Verbose($"Message From {conn}");
-            // start measure after first read (because first read includes waiting for message to be sent)
 
             if (MessageProcessor.NeedToReadShortLength(buffer))
             {

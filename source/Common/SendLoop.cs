@@ -120,14 +120,7 @@ namespace Mirror.SimpleWeb
             }
         }
 
-        /// <summary>
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="startOffset"></param>
-        /// <param name="msg"></param>
-        /// <param name="setMask"></param>
-        /// <param name="maskHelper"></param>
-        /// <returns>Offset at end of end</returns>
+        /// <returns>new offset in buffer</returns>
         static int SendMessage(byte[] buffer, int startOffset, ArrayBuffer msg, bool setMask, MaskHelper maskHelper)
         {
             int msgLength = msg.count;
