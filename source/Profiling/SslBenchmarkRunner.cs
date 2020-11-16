@@ -94,12 +94,14 @@ namespace Mirror.SimpleWeb.Profiling
     public class SslBenchmarkRunner : MonoBehaviour
     {
         public int writeTime = 10_000;
-        public int expectedMeasures = 8;
+        public int expectedMeasures = 4;
         private double startTime = double.MaxValue;
         private string outFile;
+        private string outFileTime;
+        private string outFileByte;
 
         // only enable if profiling and server/editor
-#if SIMPLEWEB_PROFILING_ENABLED && (UNITY_SERVER || UNITY_EDITOR) 
+#if SIMPLEWEB_PROFILING_ENABLED && (UNITY_SERVER || UNITY_EDITOR)
         private void Update()
         {
             if (!NetworkServer.active) { return; }
@@ -111,16 +113,18 @@ namespace Mirror.SimpleWeb.Profiling
                 startTime = Measure.sw.Elapsed.TotalMilliseconds;
                 //outFile = $"./sslBenchmark/results-{DateTime.Now:yyyy-MM-dd--HH-mm-ss}.txt";
                 outFile = $"./sslBenchmark/results.txt";
+                outFileTime = $"./sslBenchmark/resultsTime.txt";
+                outFileByte = $"./sslBenchmark/resultsByte.txt";
 
-                if (File.Exists(outFile)) { File.AppendAllText(outFile, "\n\n"); }
-                else { File.WriteAllText(outFile, ""); }
+                CheckFileExists(outFile);
+                CheckFileExists(outFileTime);
+                CheckFileExists(outFileByte);
 
                 File.AppendAllText(outFile,
                     $"{"".PadRight(20, '-')}\n" +
                     $"[" +
                         $"ssl:{FindObjectOfType<SimpleWebTransport>().sslEnabled,-7}" +
                         $"batch:{SendLoopConfig.batchSend,-7}" +
-                        $"flush:{SendLoopConfig.flushAfterSend,-7}" +
                         $"sleep:{SendLoopConfig.sleepBeforeSend,-7}" +
                     $"]\n" +
                     $"{"".PadRight(20, '-')}\n");
@@ -133,10 +137,10 @@ namespace Mirror.SimpleWeb.Profiling
                     if (!kvp.Value.writtenToFile)
                     {
                         kvp.Value.writtenToFile = true;
-                        string label = kvp.Key;
-                        string text = GetOutput(kvp);
-                        File.AppendAllText(outFile, text + "\n");
-                        UnityEngine.Debug.Log($"writen {label}");
+                        File.AppendAllText(outFile, $"{GetOutput(kvp)}\n");
+                        File.AppendAllText(outFileTime, $"{kvp.Key},{SendLoopConfig.batchSend},{SendLoopConfig.sleepBeforeSend},{GetRawTime(kvp)}\n");
+                        File.AppendAllText(outFileByte, $"{kvp.Key},{SendLoopConfig.batchSend},{SendLoopConfig.sleepBeforeSend},{GetRawBytes(kvp)}\n");
+                        UnityEngine.Debug.Log($"writen {kvp.Key}");
                     }
                 }
 #if UNITY_EDITOR
@@ -145,6 +149,12 @@ namespace Mirror.SimpleWeb.Profiling
                 Application.Quit();
 #endif
             }
+        }
+
+        private static void CheckFileExists(string outFile1)
+        {
+            if (File.Exists(outFile1)) { File.AppendAllText(outFile1, "\n\n"); }
+            else { File.WriteAllText(outFile1, ""); }
         }
 #endif
 
@@ -177,6 +187,43 @@ namespace Mirror.SimpleWeb.Profiling
                 $"times[avg:{timeAvg,8:0.000} max:{timeMax,8:0.000} total:{timeTotal,8:0.000}] " +
                 $"bytes[avg:{bytesAvg,8} max:{bytesMax,8} total:{bytesTotal,8}]";
             return text;
+        }
+
+        public static string GetRawTime(KeyValuePair<string, Measure> kvp)
+        {
+            Measure.Call[] calls;
+            double time = Measure.sw.Elapsed.TotalMilliseconds;
+            lock (kvp.Value.lockObj)
+            {
+                calls = kvp.Value.calls.ToArray();
+            }
+
+            int callCount = calls.Length;
+            if (callCount == 0)
+            {
+                return $"";
+            }
+
+            double[] times = calls.Select(x => x.delta).ToArray();
+            return string.Join(",", times);
+        }
+        public static string GetRawBytes(KeyValuePair<string, Measure> kvp)
+        {
+            Measure.Call[] calls;
+            double time = Measure.sw.Elapsed.TotalMilliseconds;
+            lock (kvp.Value.lockObj)
+            {
+                calls = kvp.Value.calls.ToArray();
+            }
+
+            int callCount = calls.Length;
+            if (callCount == 0)
+            {
+                return $"";
+            }
+
+            long[] bytes = calls.Select(x => (long)x.bytesWriten).ToArray();
+            return string.Join(",", bytes);
         }
     }
 
