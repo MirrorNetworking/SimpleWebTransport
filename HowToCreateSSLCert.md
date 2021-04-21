@@ -6,7 +6,7 @@ If you host your webgl build on a https domain you will need to use wss which wi
 
 - You need a domain name 
   - With dns record pointing at cloud server
-- Set up cloud server: [How to set up google cloud server](https://mirror-networking.com/docs/Articles/Guides/DevServer/gcloud/index.html) 
+- Set up cloud server: [How to set up google cloud server](https://mirror-networking.gitbook.io/docs/guides/server-hosting/google-cloud) 
 
 > note: You may need to open port 80 for certbot
 
