@@ -269,15 +269,15 @@ namespace Mirror.SimpleWeb
             server = null;
         }
 
-        public override bool ServerDisconnect(int connectionId)
+        public override void ServerDisconnect(int connectionId)
         {
             if (!ServerActive())
             {
                 Debug.LogError("SimpleWebServer Not Active");
-                return false;
+                return;
             }
 
-            return server.KickClient(connectionId);
+            server.KickClient(connectionId);
         }
 
 #if MIRROR_26_0_OR_NEWER
